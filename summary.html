@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="Garrett Devereux Final Project Report">
+    <title>Final Project Report &ndash; Garrett Devereux</title>
+
+    <link href="resources/bootstrap.min.css" rel="stylesheet" />
+    <link href="resources/offcanvas.css" rel="stylesheet" />
+    <link href="resources/twentytwenty.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="resources/pure.css">
+    <!--[if lte IE 8]>
+        <link rel="stylesheet" href="css/side-menu-old-ie.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="resources/side-menu.css">
+    <!--<![endif]-->
+</head>
+
+<body>
+
+    <div id="layout">
+        <!-- Menu toggle -->
+        <a href="#menu" id="menuLink" class="menu-link">
+            <!-- Hamburger icon -->
+            <span></span>
+        </a>
+
+        <div id="menu">
+            <div class="pure-menu pure-menu-open">
+                <a class="pure-menu-heading" href="report.html">Final Report</a>
+                <ul>
+                    <li><a href="report.html">Introduction</a></li>
+                    <li><a href="simple.html">Simple Features</a></li>
+                    <li><a href="advanced.html">Advanced Features</a></li>
+                    <li class="menu-item-divided pure-menu-selected"><a href="summary.html">Summary</a></li>
+                    <li><a href="final.html">Final Submission</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="main">
+            <div class="header">
+                <h1 class="content-subhead">Summary</h1>
+            </div>
+
+            <div class="content">
+                <h3 class="content-subhead">Overview of Features</h3>
+
+                <p>
+                    In the end, I was able to implement the following features
+                    from my proposal:
+                    <ul>
+                        <li>Depth of Field</li>
+                        <li>Image Textures</li>
+                        <li>Bump Mapping</li>
+                        <li>Disney BSDF</li>
+                        <li>Environment Maps</li>
+                    </ul>
+
+                    These will all work together to help build up my final image. I will
+                    use a Depth of Field camera in the scene to create a realistic camera
+                    effect. Image Textures and Bump Maps will be used on almost every mesh
+                    to produce a realistic view of the objects. I will also be lighting the
+                    scene with an Environment Map, as well as taking advantage of scenic background
+                    produced. Finally, every BSDF in the scene is a Disney BSDF, taking advantage
+                    of all the parameters implemented for an artistic and realistic scene.
+                <p>
+
+                    <br />
+                <p>
+                    As time runs short, I have not been able to fully implement the proposed
+                    Smooth Plastic Layered BSDF. After some consideration, I believe that
+                    is more beneficial to my learning and growth to focus on a few more simple
+                    and new features that I can complete, rather than have a
+                    incomplete advanced feature. That being said, I have additionally implemented
+                    the following features.
+                </p>
+
+            </div>
+
+            <div class="content">
+                <h3 class="content-subhead">Additional Features</h3>
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Additional BSDF Params:</h4>
+
+                <p>
+                    Initially, I proposed implementing the 5 Disney BSDF params:
+                    <ul>
+                        <li><code>baseColor</code></li>
+                        <li><code>metallic</code></li>
+                        <li><code>specular</code></li>
+                        <li><code>roughness</code></li>
+                        <li><code>clearcoat</code></li>
+                    </ul>
+
+                    As I begin to dig into the
+                    <a href="https://media.disneyanimation.com/uploads/production/publication_asset/48/asset/s2012_pbs_disney_brdf_notes_v3.pdf">
+                        <i>Physically Based Shading at Disney</i>
+                    </a>, I put a lot of time into fully understanding the formulas and process
+                    which should be evident from the clean and well documented code. The formulas were described in terms of all the
+                    parameters, so it was quite easy to follow the theory and simply include some addition parameters. These ended up being:
+                    <ul>
+                        <li><code>specularTint</code></li>
+                        <li><code>clearcoatGloss</code></li>
+                    </ul>
+                    After completing this BSDF, I had access to a Clearcoat model and could simulate
+                    a thin plastic layer over the surface, deterring me away from spending a lot of time implementing
+                    another similar feature. In the end, I decided to explore some other new and simple features:
+                </p>
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Modeling and Importing Meshes from Blender</h4>
+
+                <p>
+                    As my scene idea contained meshes with a lot of intricate pieces, I worked to use Blender to modify
+                    my scene, and then utilized the
+                    <a href="https://github.com/Phil26AT/BlenderNoriPlugin">
+                        <i>BlenderNoriPlugin</i>
+                    </a> to export my scene into Nori.
+                    <br /> <br />
+                    After a bit of online research, I found some meshes that I enjoyed such as this Royalty
+                    Free mesh from
+                    <a href="https://sketchfab.com/3d-models/rocky-ground-01-cdc6e6f2dccd4e03b638053dfc1d3efd">
+                        <i>CGTrader</i>
+                    </a>
+                    and this
+                    <a href="https://creativecommons.org/licenses/by/4.0/">
+                        <i>CC Attribution</i>
+                    </a> Licensed mesh from
+                    <a href="https://sketchfab.com/3d-models/rocky-ground-01-cdc6e6f2dccd4e03b638053dfc1d3efd">
+                        <i>Sketchfab</i>
+                    </a>. I then worked in Blender to separate the meshes, perform some edits, cutting, resizing,
+                    and smoothing, and spent a lot of time getting the BSDFs just right with image textures,
+                    Disney BSDF params, and bump maps.
+
+                    <span class="center">
+                        <a href="images/blender.png"><img src="images/blender.png" width="600" alt="blender"></a>
+                    </span>
+
+                    This then produced a massive .xml file that I compile and render with Nori. However, there was
+                    still some issues, such as the Textures being imported under the wrong file path and
+                    no bump maps in the scene, leading to a lot of time spent tweaking the scene. Finally, this produced
+                    a result that took a long time to render, but none the less an actual image containing all of my features (see Building
+                    up the Final Result below).
+                </p>
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Intel Open Image Denoise Integration:</h4>
+                <p>
+                    Finally, as I begin to render my images it became clear that there was a lot of noise
+                    produced for how much time it took to render. That being said, to produce a good a clear image
+                    I downloaded <a href="https://www.openimagedenoise.org/">
+                        <i>Intel's Open Image Denoise</i>
+                    </a> and changed my camera model to use a box reconstruction filter
+                    rather than the gaussian. Then, I can simply feed my images into the denoiser to get much cleaner results.
+                </p>
+            </div>
+
+            <div class="content">
+                <h3 class="content-subhead">Building up the Final Result</h3>
+                <p>
+                    Throughout the process above, here are the different version of my image that I have
+                    built working up to the final result. These scenes can all be found at <code>scenes/image/</code>.
+                </p>
+
+                <div class="center">
+                    <img src="images/finaltest.png" alt="v1" width="600" />
+                    <p>V1 - No Denoising, No Bump Maps</p>
+                </div>
+
+                <div class="center">
+                    <img src="images/finalv2.png" alt="v1" width="600" />
+                    <p>V2 - No Denoising, Bump Maps on a rocky surface</p>
+                </div>
+
+                <div class="center">
+                    <img src="images/finaldraft.png" alt="v1" width="600" />
+                    <p>V3 - All Features Utilized, Final Submission before Denoising</p>
+                </div>
+                <div class="center" style="padding: 40px 0">
+                    <!--<a class="pure-button pure-button-primary left" href="medium.html">&lArr; Medium Features</a>-->
+                    <a class="pure-button pure-button-primary right" href="final.html">Final Submission &rArr;</a>
+                </div>
+            </div>
+        </div>
+
+        <script src="resources/ui.js"></script>
+        <script src="resources/jquery.twentytwenty.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <script src="resources/bootstrap.min.js"></script>
+        <script src="/js/offcanvas.js"></script>
+        <script src="resources/jquery.event.move.js"></script>
+        <script src="resources/jquery.twentytwenty.js"></script>
+        <script>
+            $(window).load(function () {
+                $(".twentytwenty-container").twentytwenty({ default_offset_pct: 0.5 });
+                var shiftWindow = function () { scrollBy(0, -80); };
+                window.addEventListener("hashchange", shiftWindow);
+            });
+        </script>
+
+
+</body>
+</html>

@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="Garrett Devereux Final Project Report">
+    <title>Final Project Report &ndash; Garrett Devereux</title>
+
+    <link href="resources/bootstrap.min.css" rel="stylesheet" />
+    <link href="resources/offcanvas.css" rel="stylesheet" />
+    <link href="resources/twentytwenty.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="resources/pure.css">
+    <!--[if lte IE 8]>
+        <link rel="stylesheet" href="css/side-menu-old-ie.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="resources/side-menu.css">
+    <!--<![endif]-->
+    <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</head>
+
+<body>
+
+    <div id="layout">
+        <!-- Menu toggle -->
+        <a href="#menu" id="menuLink" class="menu-link">
+            <!-- Hamburger icon -->
+            <span></span>
+        </a>
+
+        <div id="menu">
+            <div class="pure-menu pure-menu-open">
+                <a class="pure-menu-heading" href="report.html">Final Report</a>
+                <ul>
+                    <li><a href="report.html">Introduction</a></li>
+                    <li><a href="simple.html">Simple Features</a></li>
+                    <li class="menu-item-divided pure-menu-selected"><a href="advanced.html">Advanced Feature</a></li>
+                    <li><a href="summary.html">Summary</a></li>
+                    <li><a href="final.html">Final Submission</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="main">
+            <div class="header">
+                <h1 class="content-subhead">Advanced Features</h1>
+            </div>
+
+            <div class="content">
+                <h3 class="content-subhead">Disney BSDF</h3>
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Relevant code:</h4>
+                <ul>
+                    <li class="codelist"><code>src/disney.cpp</code></li>
+                    <li class="codelist"><code>include/nori/warp.h</code></li>
+                    <li class="codelist"><code>src/warp.cpp</code></li>
+                    <li class="codelist"><code>src/warptest.cpp</code></li>
+                </ul>
+
+                <p>
+                    For my first advanced feature, I chose to implement Disney's Principled
+                    BSDF. This is a key feature that that can model
+                    a wide variety of surfaces, essentially working as a single BSDF
+                    that can be used for every object in a scene.
+                    This feature has a variety of intuitive parameters that work
+                    to create a robust set of surface models rather than be perfectly physically correct.
+                    This BSDF also supports image textures for the albedo, as well as bump mapping.
+                    In order to use the BSDF, you can include the following inside a mesh in the scene file:
+                    <br /><br />
+                    Example Usage: <br /><code>
+                        &lt;bsdf type="disney"&gt;<br />
+                        &lt;color name="baseColor" value="1.0, 0.0, 0.0"/&gt;<br />
+                        &lt;float name="metallic" value="0.0"/&gt;<br />
+                        &lt;float name="specular" value="0.0"/&gt;<br />
+                        &lt;float name="specularTint" value="0.0"/&gt;<br />
+                        &lt;float name="roughness" value="0.0"/&gt;<br />
+                        &lt;float name="clearcoat" value="0.0"/&gt;<br />
+                        &lt;float name="clearcoatGloss" value="0.0"/&gt;<br />
+                        &lt;bsdf/&gt;<br />
+                    </code>
+                    <br />
+                    Note that all the parameters are meant to be in the range \([0, 1]\). Additionally,
+                    they each have defaults so you only need to include the parameters you would like
+                    to change in the scene description.
+                </p>
+                <br />
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Validation and Implementation:</h4>
+
+                <p>
+                    All following images are the results from rendering analytical spheres with an
+                    <code> EnvMap</code> Emitter on both Nori and Mitsuba. For each section, all
+                    parameters are held at some constant value (may not be default) while the defined
+                    parameter varies. The code
+                    for these scenes can be found in <code>scenes/val/disney/*/*.xml</code>
+                    and <code>scenes/mitsuba/disney/*/*.xml</code>
+                </p>
+                <!--- PART 1 --------------------- Base Color ________________________-->
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Base Color:</h4>
+
+                <p>
+                    My implementation of the Disney BSDF is made up of three lobes:
+                    <ul>
+                        <li>Diffuse</li>
+                        <li>Specular</li>
+                        <li>Clearcoat</li>
+                    </ul>
+                    The <code>baseColor</code> parameter contributes to both the Diffuse and Specular lobes.
+                    We will first begin by looking at the diffuse, which uses a Schlick Fresnel
+                    approximation and modifies the grazing retroreflection response to get a specific value
+                    determined from <code>roughness</code>. The model is as follows:
+                    \[ f_d = \frac{baseColor}{\pi} (1 + (F_{D90} - 1) (1 - \cos \theta_l)^5) (1 + (F_{D90} - 1) (1 - \cos \theta_v)^5) \]
+                    where
+                    \[ F_{D90} = 0.5 + 2roughness\cos^2{\theta_d} \]
+
+                    <br />
+                    Overall, this parameter is the most fundamental and produces the largest difference
+                    as we let it vary:
+                </p>
+
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneybase1ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneybase1res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[baseColor = 1.0, 0.0, 0.0\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneybase2ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneybase2res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[baseColor = 1.0, 0.5, 0.0\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneybase3ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneybase3res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[baseColor = 1.0, 1.0, 0.0\]</p>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneybase4ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneybase4res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[baseColor = 0.0, 0.5, 0.0\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneybase5ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneybase5res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[baseColor = 0.0, 0.0, 1.0\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneybase6ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneybase6res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[baseColor = 1.0, 1.0, 1.0\]</p>
+                </div>
+
+
+
+                <!--- PART 4 --------------------- Specular ________________________-->
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Specular:</h4>
+
+                <p>
+                    Next, the Specular Lobe is implemented using a standard microfacet model defined by:
+                    \[ f_s(\theta_i, \theta_o) = \frac{F(\theta_i)D(\theta_h)G(\theta_i,\theta_o)}{4\cos\theta_i\cos\theta_o} \]
+                    In this case, \(F\) is again a Schlick Fresnel approximation of a mix of <code>metallic</code>, <code>specular</code>,
+                    <code>baseColor</code> and <code>specularTint</code> parameters. \( D \) is the normal distribution using the
+                    Generalized-Trowbridge-Reitz (GTR) distribution:
+                    \[ D_{GTR}(\theta_h) = \frac{c}{(\alpha^2 \cos^2\theta_h + \sin^2\theta_h)^\gamma} \]
+                    where \( c \) is a normalization constant and \( \alpha \) is the roughness value. For this case
+                    in particular, we use the GTR2 distribution with \( \gamma = 2 \) and \( \alpha = roughness^2 \).
+                    Finally, the shadowing term \( G \) is modeled by the Smith GGX Distribution. Disney's implementation
+                    also includes some remapping of parameters to be more "artistically pleasing". While my implementation
+                    follows the distribution, I have not completely remapped the parameters, leading to a slightly different
+                    results.
+                    <br />
+                    Overall, this model produces intuitive results, increasing the reflectiveness, or specularity,
+                    as the parameter increases:
+
+                </p>
+
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyspec1ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyspec1res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[specular = 0.0\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyspec2ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyspec2res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[specular = 0.2\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyspec3ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyspec3res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[specular = 0.4\]</p>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyspec4ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyspec4res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[specular = 0.6\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyspec5ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyspec5res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[specular = 0.8\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyspec6ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyspec6res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[specular = 1.0\]</p>
+                </div>
+
+                <!--- PART 5 --------------------- Specular Tint________________________-->
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Specular Tint:</h4>
+
+                <p>
+                    As mentioned above, the <code>specularTint</code> parameter is used
+                    in the Fresnel Approximation of the Specular Lobe. It is linearly interpolated
+                    with the color of the tint calculated with the <code>baseColor</code> and
+                    a linearly remapped <code>specular</code> parameter. As you can see below,
+                    the color of the reflection leans further towards the base color as the parameter
+                    increases.
+                </p>
+
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyspecT1ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyspecT1res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[specularTint  = 0.0\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyspecT2ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyspecT2res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[specularTint  = 0.2\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyspecT3ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyspecT3res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[specularTint  = 0.4\]</p>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyspecT4ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyspecT4res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[specularTint  = 0.6\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyspecT5ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyspecT5res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[specularTint  = 0.8\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyspecT6ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyspecT6res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[specularTint = 1.0\]</p>
+                </div>
+
+                <!--- PART 6 --------------------- Roughness ________________________-->
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Roughness:</h4>
+
+                <p>
+                    As also mentioned above, the <code>roughness</code> contributes to both the
+                    grazing retroreflection response in the Diffuse Lobe, and the \(\alpha\) term
+                    in the GTR2 and Smith GGX distributions. With an effect on both lobes, it is
+                    clearly able to decrease the reflectance of the surface as it is increased:
+                </p>
+
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyrough1ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyrough1res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[roughness = 0.0\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyrough2ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyrough2res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[roughness = 0.2\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyrough3ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyrough3res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[roughness = 0.4\]</p>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyrough4ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyrough4res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[roughness = 0.6\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyrough5ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyrough5res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[roughness = 0.8\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyrough6ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyrough6res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[roughness = 1.0\]</p>
+                </div>
+
+                <!--- PART 3 --------------------- Metallic ________________________-->
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Metallic:</h4>
+
+                <p>
+                    The <code>metallic</code> parameter contributes to both the Diffuse Lobe
+                    and the Specular Lobe, working to effectively scale and balance how
+                    much the Diffuse Lobe is contributing. In my evaluation of the Disney BSDF,
+                    my returned value is:
+                    \[ f_{disney} = (1 - metallic) * f_{diffuse} + f_{specular} + clearcoat * f_{clearcoat} \]
+                    This means that as the <code>metallic</code> parameter approaches 1, only the
+                    Specular and Clearcoat lobes will contribute, leading to a large amount of reflection.
+                </p>
+
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneymet1ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneymet1res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[metallic = 0.0\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneymet2ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneymet2res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[metallic = 0.2\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneymet3ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneymet3res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[metallic = 0.4\]</p>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneymet4ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneymet4res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[metallic = 0.6\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneymet5ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneymet5res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[metallic = 0.8\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneymet6ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneymet6res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[metallic = 1.0\]</p>
+                </div>
+
+                <!--- PART 9 --------------------- Clearcoat ________________________-->
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Clearcoat:</h4>
+
+                <p>
+                    Lastly, the Clearcoat Lobe is also implemented using a standard microfacet model defined by:
+                    \[ f_s(\theta_i, \theta_o) = \frac{F(\theta_i)D(\theta_h)G(\theta_i,\theta_o)}{4\cos\theta_i\cos\theta_o} \]
+                    In this case, \(F\) is Schlick Fresnel approximation with a fixed IOR of \(1.5\). \( D \) is again the normal distribution using the
+                    Generalized-Trowbridge-Reitz (GTR) distribution but in this case the GTR1 distribution with
+                    \( \gamma = 1 \) and \( \alpha \) a linear interpolation of the <code>clearcoatGloss</code> parameter.
+                    The shadowing term \( G \) is also modeled by the Smith GGX Distribution, but now with a roughness value fixed at \(0.25\).
+                    Note that again, this doesn't take the exact same approach as Disney's remapped implementation, resulting in slightly
+                    different results.
+                    <br /><br />
+                    Overall, while slightly different than Mitsuba, the desired effect is still found whereby increasing the clearcoat subtly
+                    increases the reflection on the surface as a thin clear layer.
+                </p>
+
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyclear1ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyclear1res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[clearcoat = 0.0\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyclear2ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyclear2res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[clearcoat = 0.2\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyclear3ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyclear3res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[clearcoat = 0.4\]</p>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyclear4ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyclear4res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[clearcoat = 0.6\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyclear5ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyclear5res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[clearcoat = 0.8\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyclear6ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyclear6res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[clearcoat = 1.0\]</p>
+                </div>
+
+                <!--- PART 9 --------------------- Clearcoat Gloss ________________________-->
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Clearcoat Gloss:</h4>
+
+                <p>
+                    As mentioned above, the <code>clearcoatGloss</code> parameter is used
+                    in the GTR1 Distribution of the Clearcoat Lobe. It is linearly interpolated
+                    with some constants, working to produce the "glossiness" of the Lobe. As you can see below,
+                    the reflection of the Clearcoat Lobe becomes more intense as the parameter increases.
+                </p>
+
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyclearT1ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyclearT1res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[clearcoatGloss = 0.0\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyclearT2ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyclearT2res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[clearcoatGloss = 0.2\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyclearT3ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyclearT3res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[clearcoatGloss = 0.4\]</p>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyclearT4ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyclearT4res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[clearcoatGloss = 0.6\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyclearT5ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyclearT5res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[clearcoatGloss = 0.8\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/disneyclearT6ref.png" alt="Mitsuba" class="img-responsive">
+                        <img src="images/disneyclearT6res.png" alt="Nori" class="img-responsive">
+                    </div>
+                    <p class="text-center">\[clearcoatGloss = 1.0\]</p>
+                </div>
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Importance Sampling:</h4>
+
+                <p>
+                    In order to sample from the Disney BRDF, I effectively assign weights to each Lobe,
+                    take a random sample, and then based on the weights directly sample one of the lobes.
+                    I begin by assigning a weight of
+                    \[ diffuseWeight = \frac{1 - metallic}{2} \]
+                    Then, if the uniform sample is less than this value, I simply sample from
+                    a Cosine-Weighted Hemisphere. If not, I rescale the point to be uniform, and then
+                    assign a weight
+                    \[ specularWeight = \frac{1}{1 + clearcoat} \]
+                    to the Specular Lobe. If the newly scaled sample is less than this, I simply
+                    sample from the GTR2 distribution. Finally, if I still have not sampled, I
+                    default to the Clearcoat Lobe and will take a sample from the GTR1 distribution.
+
+                    <br /> <br /> <br />
+                    In order to verify that my new sampling methods GTR1 and GTR2 are valid, I
+                    added code to <code>warptest.cpp</code> to ensure the sampling methods were correct:
+                </p>
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">GTR1 Sampling Validation:</h4>
+                <br />
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/gtr1-005.png" alt="">
+                    </div>
+                    <p class="text-center">\[\alpha = 0.05\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/gtr1-02.png" alt="">
+                    </div>
+                    <p class="text-center">\[\alpha = 0.2\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/gtr1-08.png" alt="">
+                    </div>
+                    <p class="text-center">\[\alpha = 0.8\]</p>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/gtr1-005val.png" alt="">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/gtr1-02val.png" alt="">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/gtr1-08val.png" alt="">
+                    </div>
+                </div>
+
+                <br />
+                <h4 class="content-subhead" style="margin: 0 0 0 0">GTR2 Sampling Validation:</h4>
+                <br />
+                <div class="col-md-4">
+                    <img src="images/gtr2-05.png" width="220" alt="">
+                    <p class="text-center">\[\alpha = 0.05\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/gtr2-02.png" alt="">
+                    </div>
+                    <p class="text-center">\[\alpha = 0.2\]</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/gtr2-08.png" alt="">
+                    </div>
+                    <p class="text-center">\[\alpha = 0.8\]</p>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/gtr2-005val.png" alt="">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/gtr2-02val.png" alt="">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="twentytwenty-container">
+                        <img src="images/gtr2-08val.png" alt="">
+                    </div>
+                </div>
+
+                <br />
+
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Problems and External Libraries:</h4>
+                <p>
+                    This feature required significantly more work and time than any of the basic features, but
+                    overall went pretty smoothly with the large amount of documentation and examples.
+                    Specifically, I found the
+                    <a href="https://media.disneyanimation.com/uploads/production/publication_asset/48/asset/s2012_pbs_disney_brdf_notes_v3.pdf">
+                        <i>Physically Based Shading at Disney</i>
+                    </a> paper as well as the
+                    <a href="https://github.com/wdas/brdf"><i>Official Disney BRDF Implementation</i></a> particularly
+                    helpful. They contained all of the theory behind the models used, as well as an example
+                    of the implementation for some of the functions. With this, no external libraries were required as I was able to implement
+                    the required distribution functions myself in both <code>src/disney.cpp</code> and <code>src/warp.cpp</code>.
+                </p>
+
+                <h3 class="content-subhead">Environment Map Emitter</h3>
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Relevant code:</h4>
+                <ul>
+                    <li class="codelist"><code>src/envmap.cpp</code></li>
+                </ul>
+
+                <p>
+                    For my second advanced feature, I chose to implement Environment Mapping.
+                    Essentially, this is an infinite area light that can be through of as
+                    an enormous sphere that casts light in to the scene from all directions.
+                    The input to the scene is a HDRI environment map parameterized by longitude \(\theta\)
+                    and latitude \(\phi\). It can very simply be added to the scene with the following:
+                    <br /><br />
+                    Example Usage: <br /><code>
+                        &lt;mesh type="sphere"&gt;<br />
+                        ...<br />
+                        &lt;emitter type="envmap"&gt;<br />
+                        &lt;string name="filename" value="envmap.exr" /&gt;<br />&lt;/emitter&gt;<br />&lt;/mesh&gt;
+                    </code>
+                </p>
+                <br />
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Implementation:</h4>
+
+                <p>
+                    The implementation of this feature begins relatively similar to ImageTextures. The class
+                    first reads in the file and stores it as a matrix of <code>Color3f</code>. However, in this
+                    case, it reads the Bitmap pixel-by-pixel and stores the luminance value at each point. This
+                    is where the similarities to Image Textures end. We will
+                    then treat this matrix as a piecewise constant 2D function \(f\) with inputs \(u, v\) (not yet \(\theta, \phi\)).
+                    In order to effectively draw samples
+                    from this map, we work to precompute the Marginal PDF and CDF and the Conditional PDF and CDF that can
+                    later be quickly and efficiently importance sampled. The process looks like the following:
+                    <br /> <br /> <br />
+
+                    First, in the constructor of <code>EnvMap</code> <code>precompute2D()</code> is called. This function
+                    iterates over all \(u\) values in the image, considering one row of the matrix at a time.
+                    For each row, it then computes the 1-dimensional PDF and CDF for the row, which is just the conditional
+                    PDF \(p_v(v | u) = \frac{p(u,v)}{p_u(u)}\) and conditional CDF. Additionally, it keeps track of the sum of all of the elements
+                    in the row. Finally, after all of the conditional PDFs and CDFs have been stored, it computes the 1-dimensional
+                    PDF and CDF for the columnSum array that was stored, resulting in the marginal PDF
+                    \(p_u(u) = \int p(u,v) dv\) and marginal CDF.
+                    <br /> <br /> <br />
+                    Next, the <code>EnvMap</code> can efficiently be sampled using its precomputed data.
+                    With uniformly distributed random variables, it simply will first draw a sample in
+                    one direction using the marginal densities, then with the constant value sample we
+                    can go in the other direction using the conditional densities to arrive at our newly
+                    sampled point \((s_u, s_v)\).
+                    <br /> <br /> <br />
+                    Finally, we have some mapping to do. First, we project the \((s_u, s_v)\) in the direction \((\theta, \phi)\),
+                    through scaling. Next, we project this new direction onto the unit sphere to get \(\omega = (x,y,z)\) using the definition of
+                    spherical coordinates. However, we still need to express the probability density in terms
+                    of solid angle as we have switched domains. This conversion between distributions can be done
+                    by using the property
+                    \[ p'(X') = p'(T(X)) = \frac{p(X)}{|J_T(X)|} \]
+                    where \(|J_T(X)|\) is the absolute value of the determinant of T's Jacobian.
+                    With two domain switches, we need to apply this property twice. First, when
+                    we go from the mapping of \((u,v)\) to \((\theta, \phi)\) through scaling, we
+                    find the absolute value of the Jacobian to be \(\frac{2 \pi^2}{s_u s_v}\) resulting
+                    in \(p(\theta, \phi) = p(u,v)\frac{s_u s_v}{2 \pi^2}\).
+                    As the absolute value of the Jacobian for the mapping from \((r, \theta, \phi)\)
+                    to \((x, y, z)\) is \(r^2\sin \theta\) as we are considering the unit sphere,
+                    so we get a final distribution of
+                    \[p(\omega) = p(u,v) \frac{s_u s_v}{2 \pi^2 \sin \theta}\]
+                    <br /> <br />
+                    With the process in place, we can now return the sample with the correct probability and importance.
+
+                </p>
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Validation:</h4>
+
+                <p>
+                    All following images are the results from rendering analytical spheres with an
+                    <code> EnvMap</code> Emitter on both Nori and Mitsuba. Note that Mitsuba
+                    takes in a weird transformation matrix for the environment map, so there is
+                    a slight difference of the angle below. The code
+                    for these scenes can be found in <code>scenes/val/envmap/*.xml</code>
+                    and <code>scenes/mitsuba/envmap/*.xml</code>
+                </p>
+
+                <span class="center">
+                    <div class="twentytwenty-container">
+                        <img src="images/envmirrorref.png" alt="Mitsuba" class="img-responsive" />
+                        <img src="images/envmirrorres.png" alt="Nori" class="img-responsive" />
+                    </div> <br />
+                    <p class="subtitle"><i>Stacked Spheres with Mirror BSDF</i></p>
+                </span>
+
+                <span class="center">
+                    <div class="twentytwenty-container">
+                        <img src="images/envdieref.png" alt="Mitsuba" class="img-responsive" />
+                        <img src="images/envdieres.png" alt="Nori" class="img-responsive" />
+                    </div> <br />
+                    <p class="subtitle"><i>Spheres with Dielectric BSDF</i></p>
+                </span>
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Problems and External Libraries:</h4>
+                <p>
+                    Overall, this was one of the more complicated features to implement and hence took more time.
+                    I begin by reading the
+                    <a href="https://www.pbr-book.org/3ed-2018/Light_Sources/Infinite_Area_Lights"><i>PBR 12.6</i></a>
+                    section on Infinite Area Lights, and explored their implementation. I found myself still stuck
+                    and confused and did quite a bit of research on other sampling methods and explanations of the subject.
+                    I eventually found the paper
+                    <a href="https://web.cs.wpi.edu/~emmanuel/courses/cs563/S07/projects/envsample.pdf">
+                        <i>Monte Carlo Rendering with Natural Illumination</i>
+                    </a> with a strong description and
+                    pseudocode for a new importance sampling method, and after trying it out it seemed to work well.
+                    There are no external libraries required, and the only thing extra I added was Bilinear Interpolation
+                    for the evaluation. This was probably my favorite feature to implement, and produced a very versatile
+                    way to add backgrounds and lighting to the scene. See <code>src/envmap.cpp</code> for a more
+                    comprehensive explanation of the implementation.
+                </p>
+
+                <div class="center" style="padding: 40px 0">
+                    <!--<a class="pure-button pure-button-primary left" href="medium.html">&lArr; Medium Features</a>-->
+                    <a class="pure-button pure-button-primary right" href="summary.html">Summary &rArr;</a>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+        <script src="resources/ui.js"></script>
+        <script src="resources/jquery.twentytwenty.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <script src="resources/bootstrap.min.js"></script>
+        <script src="/js/offcanvas.js"></script>
+        <script src="resources/jquery.event.move.js"></script>
+        <script src="resources/jquery.twentytwenty.js"></script>
+        <script>
+            $(window).load(function () {
+                $(".twentytwenty-container").twentytwenty({ default_offset_pct: 0.5 });
+                var shiftWindow = function () { scrollBy(0, -80); };
+                window.addEventListener("hashchange", shiftWindow);
+});
+        </script>
+
+
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="Garrett Devereux Final Project Report">
+    <title>Final Project Report &ndash; Garrett Devereux</title>
+
+    <link href="resources/bootstrap.min.css" rel="stylesheet" />
+    <link href="resources/offcanvas.css" rel="stylesheet" />
+    <link href="resources/twentytwenty.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="resources/pure.css">
+    <!--[if lte IE 8]>
+        <link rel="stylesheet" href="css/side-menu-old-ie.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="resources/side-menu.css">
+    <!--<![endif]-->
+</head>
+
+<body>
+
+    <div id="layout">
+        <!-- Menu toggle -->
+        <a href="#menu" id="menuLink" class="menu-link">
+            <!-- Hamburger icon -->
+            <span></span>
+        </a>
+
+        <div id="menu">
+            <div class="pure-menu pure-menu-open">
+                <a class="pure-menu-heading" href="report.html">Final Report</a>
+                <ul>
+                    <li><a href="report.html">Introduction</a></li>
+                    <li><a href="simple.html">Simple Features</a></li>
+                    <li><a href="advanced.html">Advanced Features</a></li>
+                    <li><a href="summary.html">Summary</a></li>
+                    <li class="menu-item-divided pure-menu-selected"><a href="final.html">Final Submission</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="main">
+            <div class="header">
+                <h1 class="content-subhead">Final Submission</h1>
+            </div>
+
+            <div class="content">
+
+                <span class="center"><a href="images/final.png"><img src="images/final.png" width="800" alt="Final submission"></a></span>
+
+                <h1 class="content-subhead">Acknowledgements</h1>
+                <ul>
+                    <li>The scene modeling is courtesy of <a href="https://docs.blender.org/api/current/index.html">Blender</a></li>
+                    <li>Exporting the scene to Nori is courtesy of <a href="https://github.com/Phil26AT/BlenderNoriPlugin">BlenderNoriPlugin</a></li>
+                    <li>A lot of the theory and Implmentation is courtesy of <a href="https://www.pbr-book.org/"><i>Physically Based Rendering</i></a></li>
+                    <li>The validation renderings are courtesy of <a href="https://www.mitsuba-renderer.org/">Mitsuba</a></li>
+                    <li>The Disney BSDF is courtesy of the <a href="https://media.disneyanimation.com/uploads/production/publication_asset/48/asset/s2012_pbs_disney_brdf_notes_v3.pdf">
+                    <i>Physically Based Shading at Disney</i></a> and <a href="https://github.com/wdas/brdf">Official Disney BRDF Implementation</a></li>
+                    <li>The Theory behind the EnvMap implementation is courtesy of <a href="https://web.cs.wpi.edu/~emmanuel/courses/cs563/S07/projects/envsample.pdf">
+                    <i>Monte Carlo Rendering with Natural Illumination</i></a></li>
+                    <li>The Image Denoising is courtesy of <a href="https://www.openimagedenoise.org/">
+                    <i>Intel's Open Image Denoise</i></a></li>
+                    <li>The Barbell Mesh is courtesy of <a href="https://sketchfab.com/3d-models/rocky-ground-01-cdc6e6f2dccd4e03b638053dfc1d3efd">CGTrader</a></li>
+                    <li>The Rocky Mesh is courtesy of <a href="https://sketchfab.com/3d-models/rocky-ground-01-cdc6e6f2dccd4e03b638053dfc1d3efd">Sketchfab</a>
+                    with a Liscense from <a href="https://creativecommons.org/licenses/by/4.0/"><i>CC Attribution</i></a></li>
+                    <li>All Environment Maps are courtesy of <a href="https://hdrmaps.com/freebies/">HDRMaps</a></li>
+                    <li>The motivational image is courtesy of <a href="https://www.instagram.com/p/CixPVBCgoq7/">@DiscoveryDeadlift</a></li>
+                    <li>The Final Report format is courtesy of <a href="http://noobody.org/is-report/index.html">Benedikt Bitterli</a></li>
+                </ul>
+
+                <!--<div class="center" style="padding: 40px 0">
+            <a class="pure-button pure-button-primary left" href="advanced.html">&lArr; Advanced Feature</a>
+            </div>-->
+            </div>
+        </div>
+
+
+
+
+
+        <script src="resources/ui.js"></script>
+        <script src="resources/jquery.twentytwenty.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <script src="resources/bootstrap.min.js"></script>
+        <script src="/js/offcanvas.js"></script>
+        <script src="resources/jquery.event.move.js"></script>
+        <script src="resources/jquery.twentytwenty.js"></script>
+        <script>
+            $(window).load(function () {
+                $(".twentytwenty-container").twentytwenty({ default_offset_pct: 0.5 });
+                var shiftWindow = function () { scrollBy(0, -80); };
+                window.addEventListener("hashchange", shiftWindow);
+            });
+        </script>
+
+
+
+</body>
+</html>

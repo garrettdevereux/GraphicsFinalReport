@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'>
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="Garrett Devereux Final Project Report" />
+    <title>Final Project Report &ndash; Garrett Devereux</title>
+
+    <link href="resources/bootstrap.min.css" rel="stylesheet" />
+    <link href="resources/offcanvas.css" rel="stylesheet" />
+    <link href="resources/twentytwenty.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="resources/pure.css" />
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="resources/side-menu.css" />
+    <!--<![endif]-->
+</head>
+
+<body>
+    <div id="layout">
+        <!-- Menu toggle -->
+        <a href="#menu" id="menuLink" class="menu-link">
+            <!-- Hamburger icon -->
+            <span></span>
+        </a>
+
+        <div id="menu">
+            <div class="pure-menu pure-menu-open">
+                <a class="pure-menu-heading" href="report.html">Final Report</a>
+                <ul>
+                    <li class="menu-item-divided pure-menu-selected">
+                        <a href="report.html">Introduction</a>
+                    </li>
+                    <li><a href="simple.html">Simple Features</a></li>
+                    <li><a href="advanced.html">Advanced Features</a></li>
+                    <li><a href="summary.html">Summary</a></li>
+                    <li><a href="final.html">Final Submission</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="main">
+            <div class="header">
+                <h1 class="content-subhead">Final Project Report</h1>
+                <h3 class="content-subhead" style="margin: 0 0 10px 0">Garrett Devereux</h3>
+            </div>
+
+            <div class="content">
+                <!--<i>Please click image thumbnails for full size version</i>-->
+
+                <h2 class="content-subhead">Motivational Image: "Discovery Deadlift"</h2>
+                <div class="center">
+                    <img src="images/inspiration.jpg" alt="Discovery" width="600" />
+                    <p><a href="https://www.instagram.com/p/CixPVBCgoq7/"><i>Source</i></a></p>
+                </div>
+                <p>
+                    When coming up with the idea behind my project, I really focused on my interests and current
+                    experiences. As a study abroad student from the United States, my time studying in Zürich has meant
+                    so much more than just school. I have been able to immerse myself in the culture, see
+                    the extraordinary terrain, and work with some of the greatest minds at ETH. Additionally,
+                    one of my biggest hobbies and interests is powerlifting, and I knew before the project was announced
+                    that I wanted to incorporate this in some way. After hearing the theme of the project was "Out of Place",
+                    I immediately pictured Switzerland-like terrain with a barbell sitting at the top of the mountain.
+                    The juxtaposition begs the questions "How did the weights get there?" and "Why are they there?" ..."
+                    One of the fitness influencers I follow @discoverydeadlift does just this, and I will work to model
+                    an image around this idea. The rendering I currently picture will be a close up of the barbell and weights
+                    with a depth of field effect focused on the closest set of plates. The plates then will be sitting on
+                    a glossy wood weightlifting platform with a variety of rocks on the edge of a cliff, and the background
+                    will be out of focus but show a large range of snowy mountains. Throughout this project, I will implement
+                    a variety of features required for this rendering, and combine them all in the end for a final image.
+                </p>
+
+                <div style="overflow: hidden; margin: 30px 0 20px 0">
+                    <h2 class="content-subhead" style="margin: 0 0 0 0; line-height: 89px">Project Implementation: Extending the Nori Renderer</h2>
+                </div>
+
+                <p>
+                    For my final project, I worked to further extend
+                    <a href="https://cgl.ethz.ch/teaching/cg22/www-nori/index.html#prelim"><i>Nori</i></a>, the renderer we have been building up for
+                    ETH Zürich's Autumn 2022 Computer Graphics course. Through the process, I have implemented a
+                    variety of additional Simple and Advanced Features that can be seen on the following pages.
+                    Finally, I worked to put all of the new features together to create a final rendering based on my motivational image.
+                </p>
+
+
+                <div class="center" style="padding: 40px 0">
+                    <a class="pure-button pure-button-primary right" href="simple.html">Simple Features &rArr;</a>
+                </div>
+            </div>
+        </div>
+
+        <script src="resources/ui.js"></script>
+        <script src="resources/jquery.twentytwenty.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <script src="resources/bootstrap.min.js"></script>
+        <script src="/js/offcanvas.js"></script>
+        <script src="resources/jquery.event.move.js"></script>
+        <script src="resources/jquery.twentytwenty.js"></script>
+        <script>
+            $(window).load(function () {
+                $(".twentytwenty-container").twentytwenty({ default_offset_pct: 0.5 });
+                var shiftWindow = function () { scrollBy(0, -80); };
+                window.addEventListener("hashchange", shiftWindow);
+            });
+        </script>
+
+
+    </div>
+</body>
+</html>

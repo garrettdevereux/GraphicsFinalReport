@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="Garrett Devereux Final Project Report">
+    <title>Final Project Report &ndash; Garrett Devereux</title>
+
+    <link href="resources/bootstrap.min.css" rel="stylesheet" />
+    <link href="resources/offcanvas.css" rel="stylesheet" />
+    <link href="resources/twentytwenty.css" rel="stylesheet" type="text/css" />
+    <link href="resources/twentytwenty.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="resources/pure.css">
+    <!--[if lte IE 8]>
+        <link rel="stylesheet" href="css/side-menu-old-ie.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="resources/side-menu.css">
+    <!--<![endif]-->
+
+    <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</head>
+
+<body>
+
+    <div id="layout">
+        <!-- Menu toggle -->
+        <a href="#menu" id="menuLink" class="menu-link">
+            <!-- Hamburger icon -->
+            <span></span>
+        </a>
+
+        <div id="menu">
+            <div class="pure-menu pure-menu-open">
+                <a class="pure-menu-heading" href="report.html">Final Report</a>
+                <ul>
+                    <li><a href="report.html">Introduction</a></li>
+                    <li class="menu-item-divided pure-menu-selected"><a href="simple.html">Simple Features</a></li>
+                    <li><a href="advanced.html">Advanced Features</a></li>
+                    <li><a href="summary.html">Summary</a></li>
+                    <li><a href="final.html">Final Submission</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="main">
+            <div class="header">
+                <h1 class="content-subhead">Simple Features</h1>
+            </div>
+
+            <div class="content">
+                <h3 class="content-subhead">Depth of Field</h3>
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Relevant code:</h4>
+                <ul>
+                    <li class="codelist"><code>src/depth.cpp</code></li>
+                </ul>
+
+                <p>
+                    Depth of field can be added to a scene by using the newly implemented camera <code>DepthCamera</code>. It offers all of the same features as the already
+                    built <code>PerspectiveCamera</code> (width, height, fov, nearclip and farclip...) but additionally takes in two parameters
+                    <code>lensRadius</code> and <code>focalDistance</code> that create the depth of field effect. This is accomplished in the <code>sampleRay()</code> method, where if the <code>lensRadius</code> is
+                    greater than zero, the lens point and focus point are calculated, and the returned ray is modified with an updated origin of the lens point and
+                    distance ending at the calculated focus point.
+                    <br /><br />
+                    Example Usage: <br /><code>
+                        &lt;camera type="depth"&gt;<br />
+                        ...<br />
+                        &lt;float name="lensRadius" value="0.4" /&gt;<br />
+                        &lt;float name="focalDistance" value="6" /&gt;<br />&lt;/camera&gt;
+                    </code>
+                </p>
+                <br />
+
+                <p>
+                    All images in this section are shot with a <code>DepthCamera</code> in the base Cornell Box scene and can be found
+                    in <code>scenes/val/dof/*.xml</code>. First, we can hold the <code>lensRadius</code> constant
+                    and vary the <code>focalDistance</code> to see objects of varying depths come in and out of view.
+                </p>
+
+                <span class="center">
+                    <a href="images/dof2.png"><img src="images/dof2.png" alt="DOF2"></a>
+                    <p class="subtitle"><i><code>lensRadius</code> = 0.4, <code>focalDistance</code> = 3.95</i></p>
+                </span>
+
+                <span class="center">
+                    <a href="images/dof3.png"><img src="images/dof3.png" alt="DOF3"></a>
+                    <p class="subtitle"><i><code>lensRadius</code> = 0.4, <code>focalDistance</code> = 4.97</i></p>
+                </span>
+
+                <span class="center">
+                    <a href="images/dof1.png"><img src="images/dof1.png" alt="DOF1"></a>
+                    <p class="subtitle"><i><code>lensRadius</code> = 0.4, <code>focalDistance</code> = 6.00</i></p>
+                </span>
+
+                <p>
+                    Additionally, we can hold the <code>focalDistance</code>constant and vary the <code>lensRadius</code>. Setting
+                    <code>lensRadius</code> to 0.00 is just a perspective camera with infinite depth of field, but when increased, the range
+                    of what is in focus in the image decreases.
+                </p>
+                <span class="center">
+                    <a href="images/dofa.png"><img src="images/dofa.png" alt="DOFA"></a>
+                    <p class="subtitle"><i><code>lensRadius</code> = 0.01, <code>focalDistance</code> = 4.97</i></p>
+                </span>
+
+                <span class="center">
+                    <a href="images/dofb.png"><img src="images/dofb.png" alt="DOFB"></a>
+                    <p class="subtitle"><i><code>lensRadius</code> = 0.10, <code>focalDistance</code> = 4.97</i></p>
+                </span>
+
+                <span class="center">
+                    <a href="images/dofc.png"><img src="images/dofc.png" alt="DOFC"></a>
+                    <p class="subtitle"><i><code>lensRadius</code> = 0.50, <code>focalDistance</code> = 4.97</i></p>
+                </span>
+
+                <span class="center">
+                    <a href="images/dofd.png"><img src="images/dofd.png" alt="DOFD"></a>
+                    <p class="subtitle"><i><code>lensRadius</code> = 0.70, <code>focalDistance</code> = 4.97</i></p>
+                </span>
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Problems and External Libraries:</h4>
+                <p>
+                    This feature was quite straight forward to implement with resources from
+                    <a href="https://www.pbr-book.org/3ed-2018/Camera_Models/Realistic_Cameras"><i>PBR 6.4</i></a> on Realistic Cameras
+                    and Lecture 20 on Optics and Cameras. There are no external libraries required, and only a few new
+                    lines of code on top of the already implemented shell of the perspective camera.
+                </p>
+
+                <h3 class="content-subhead">Images as Textures</h3>
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Relevant code:</h4>
+                <ul>
+                    <li class="codelist"><code>src/imagetexture.cpp</code></li>
+                    <li class="codelist"><code>src/sphere.cpp</code></li>
+                    <li class="codelist"><code>src/lodepng.cpp</code></li>
+                    <li class="codelist"><code>include/nori/lodepng.h</code></li>
+                </ul>
+
+                <p>
+                    One of the most fundamental features for rendering realistic images is using
+                    images as textures. With the new Texture class <code>ImageTexture</code> this
+                    is now possible. You can simply include the Texture Type <code>"image_texture"</code>
+                    with name <code>"albedo"</code> under a BSDF in the scene file and the texture will be added.
+
+                    <br /><br />
+                    Example Usage: <br /><code>
+                        &lt;texture type="image_texture" name="albedo"&gt;<br />
+                        &lt;string name="filename" value="image.png" /&gt;<br />
+                        &lt;vector name="scale" value="1.0 1.0" /&gt;<br />
+                        &lt;string name="wrap" value="repeat" /&gt;<br />&lt;/texture&gt;
+                    </code>
+                </p>
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Implementation and Validation:</h4>
+                <p>
+                    This is accomplished with a two-step process. First, on initialization,
+                    the <code>lodepng</code> library will read the image texture and convert it
+                    into a <code>Color3f</code> matrix. Next, whenever the BSDF is evaluated, it will make
+                    a call to the ImageTexture's <code>eval()</code> function with the corresponding uv coordinates.
+                    The ImageTexture will then consider the scale of the image, as well as the
+                    wrap technique (clamp or repeat) to return the corresponding color.
+                </p>
+
+                <p>
+                    All images in this section are shot with the same plane.obj, uv image texture, and camelhead.obj or analytical sphere.
+                    The scenes also use a single point light. However, note that
+                    Nori takes the parameter power for a point light while Mitsuba uses intensity, resulting in slightly
+                    different colors and light intensity. This does not matter for the image-texture comparison, as we
+                    are just validating the mapping from uv position to image texture. The Nori scenes can be found at
+                    <code>scenes/val/imagetextures/*.xml</code> and the Mitsuba scenes at <code>scenes/mitsuba/imagetexture/*.xml</code>.
+
+                </p>
+
+                <span class="center">
+                    <div class="twentytwenty-container">
+                        <img src="images/refimagesphere.png" alt="Mitsuba" class="img-responsive" />
+                        <img src="images/imagesphere.png" alt="Nori" class="img-responsive" />
+                    </div> <br />
+                    <p class="subtitle"><i>Sphere Comparison with Wrap = Repeat and Scale = (1,1)</i></p>
+                </span>
+
+                <span class="center">
+                    <div class="twentytwenty-container">
+                        <img src="images/refimagemesh.png" alt="Mitsuba" class="img-responsive" />
+                        <img src="images/imagemesh.png" alt="Nori" class="img-responsive" />
+                    </div> <br />
+                    <p class="subtitle"><i>Mesh Comparison with Wrap = Repeat and Scale = (1,1)</i></p>
+                </span>
+
+                <span class="center">
+                    <div class="twentytwenty-container">
+                        <img src="images/refimageclamp.png" alt="Mitsuba" class="img-responsive" />
+                        <img src="images/imageclamp.png" alt="Nori" class="img-responsive" />
+                    </div> <br />
+                    <p class="subtitle"><i>Mesh Comparison with Wrap = Clamp and Scale = (1,1)</i></p>
+                </span>
+
+                <span class="center">
+                    <div class="twentytwenty-container">
+                        <img src="images/refimagescale1.png" alt="Mitsuba" class="img-responsive" />
+                        <img src="images/imagescale1.png" alt="Nori" class="img-responsive" />
+                    </div> <br />
+                    <p class="subtitle"><i>Sphere Comparison with Wrap = Repeat and Scale = (1,2)</i></p>
+                </span>
+
+                <span class="center">
+                    <div class="twentytwenty-container">
+                        <img src="images/refimagescale2.png" alt="Mitsuba" class="img-responsive" />
+                        <img src="images/imagescale2.png" alt="Nori" class="img-responsive" />
+                    </div> <br />
+                    <p class="subtitle"><i>Sphere Comparison with Wrap = Repeat and Scale = (0.5,0.5)</i></p>
+                </span>
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Problems and External Libraries:</h4>
+                <p>
+                    Suprisingly, the implementation of this feature gave me a lot more trouble than I was expecting.
+                    After figuring out the the <code>lodepng</code> external library and successfully converting
+                    .pngs to a <code>Color3f</code> array, I was quickly able to implement correct mapping for meshes.
+                    However, when converting to Mitsuba, there was a flipped coordinate frame so it took me a while
+                    to initialize a scene that was the same, and then figure out a way to flip the uv mapping. Additionally,
+                    my <code>sphere::setHitInformation()</code> was setting the uv coordinates incorrectly, leading
+                    to the image wrapping around the wrong pole of the sphere. After lots of debugging and trying different
+                    formulas, I modified <code>sphericalCoordinates()</code>, flipped the u and v, and rescaled to produce
+                    the correct result. This finally confirmed the uv mapping was correct for both the sphere and meshes
+                    as well as scaling and clamping, but took up an unnecessary amount of time.
+                </p>
+
+                <h3 class="content-subhead">Bump Mapping</h3>
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Relevant code:</h4>
+                <ul>
+                    <li class="codelist"><code>src/mesh.cpp::setHitInformation</code></li>
+                    <li class="codelist"><code>src/diffuse.cpp::useBumpMap (and others)</code></li>
+                    <li class="codelist"><code>include/nori/bsdf.h::useBumpMap</code></li>
+                </ul>
+
+                <p>
+                    To enhance surface detail without the cost of adding highly detailed geometry,
+                    I implemented support for bump mapping to manipulate shading normals.
+                    There is no new Texture class for the implementation as the process is almost identical
+                    to the image textures. In order to use a bump map, all that needs to be done
+                    is including the Texture Type <code>"image_texture"</code>
+                    with name <code>"bumpmap"</code> under a BSDF in the scene .xml file.
+
+                    <br /><br />
+                    Example Usage: <br /><code>
+                        &lt;texture type="image_texture" name="bumpmap"&gt;<br />
+                        &lt;string name="filename" value="bumpmap.png" /&gt;<br />
+                        &lt;vector name="scale" value="1.0 1.0" /&gt;<br />
+                        &lt;string name="wrap" value="repeat" /&gt;<br />&lt;/texture&gt;
+                    </code>
+                    <br /><br />
+                <p />
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Implementation and Validation:</h4>
+
+                <p>
+
+                    In order to enable Bump Mapping for BSDFs,
+                    a new member <code>m_bumpmap</code> needs to be added to the class similar to its albedo <code>m_albedo</code>,
+                    as well as a <code>useBumpMap()</code> function
+                    that will return the bump map if it exists. Note that for this example a diffuse BSDF
+                    has been updated with this implementation, but for other examples this function will also be
+                    implemented in the corresponding BSDF .cpp file. Then, when intersections
+                    are being calculated and <code>setHitInformation()</code> is called inside of <code>mesh.cpp</code>,
+                    the current BSDF is checked for a bump map. If it has one, it will evaluate
+                    the bump map at the intersection point, and calculate the new shading normal using:<br />
+                    <center>\(\vec{n} = \left( \begin{array}{c} 2r - 1 \\ 2g - 1 \\ 2b - 1 \\ \end{array} \right)\)</center>
+                    Finally, we orient this new normal to the correct coordinate system and set it as
+                    <code>its.shFrame</code>.
+                </p>
+
+                <span class="center">
+                    <div class="twentytwenty-container">
+                        <img src="images/bumpimage.png" alt="ImageTexture" class="img-responsive" />
+                        <img src="images/bumptexture.png" alt="BumpMap with No Texture" class="img-responsive" />
+                        <img src="images/bumpmap.png" alt="BumpMap Applied to ImageTexture" class="img-responsive" />
+                    </div> <br />
+                    <p class="subtitle"><i>Comparison of Only Image (Top Left), Only the Bump Mapping (Top Right) and Bump Mapping Applied to Texture (Bottom)</i></p>
+                </span>
+
+                <h4 class="content-subhead" style="margin: 0 0 0 0">Problems and External Libraries:</h4>
+                <p>
+                    After figuring out my issues with the Image Textures, the implementation of Bump Mapping
+                    went smoothly.
+                    <a href="https://www.pbr-book.org/3ed-2018/Materials/Bump_Mapping"><i>PBR 9.3</i></a>
+                    has a notable section on bump mapping as well as a full calculation
+                    of the new shading normal, and Mitsuba also has its own implementation available. Additionally,
+                    there is well described article on
+                    <a href="https://en.wikipedia.org/wiki/Normal_mapping"><i>Wikipedia</i></a>
+                    that explains the calculation of the tangent space as well as the mapping from the bump
+                    map to the new shading normal
+                </p>
+
+
+
+
+                <div class="center" style="padding: 40px 0">
+                    <!--<a class="pure-button pure-button-primary left" href="overview.html">&lArr; System Overview</a>-->
+                    <a class="pure-button pure-button-primary right" href="advanced.html">Advanced Features &rArr;</a>
+                </div>
+            </div>
+        </div>
+
+        <script src="resources/ui.js"></script>
+        <script src="resources/jquery.twentytwenty.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <script src="resources/bootstrap.min.js"></script>
+        <script src="/js/offcanvas.js"></script>
+        <script src="resources/jquery.event.move.js"></script>
+        <script src="resources/jquery.twentytwenty.js"></script>
+        <script>
+            $(window).load(function () {
+                $(".twentytwenty-container").twentytwenty({ default_offset_pct: 0.5 });
+                var shiftWindow = function () { scrollBy(0, -80); };
+                window.addEventListener("hashchange", shiftWindow);
+            });
+        </script>
+
+</body>
+</html>
